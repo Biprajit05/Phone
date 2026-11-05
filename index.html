@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Dialer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .phone-container {
+      width: 100%;
+      max-width: 420px;
+      height: 100vh;
+      max-height: 840px;
+      background: #1e293b;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    @media (min-width: 450px) {
+      .phone-container {
+        border-radius: 36px;
+        height: 92vh;
+        border: 4px solid #334155;
+      }
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px 8px;
+    }
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #94a3b8;
+    }
+    .nav-tabs {
+      display: flex;
+      background: #0f172a;
+      margin: 8px 16px;
+      padding: 4px;
+      border-radius: 12px;
+    }
+    .nav-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .nav-tab.active {
+      background: #2563eb;
+      color: #fff;
+    }
+    .tab-content {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .tab-content.active {
+      display: flex;
+    }
+    .display-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 16px 20px;
+      min-height: 120px;
+    }
+    .contact-match {
+      font-size: 0.95rem;
+      color: #38bdf8;
+      margin-bottom: 4px;
+      min-height: 20px;
+      font-weight: 500;
+    }
+    .number-display {
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #ffffff;
+      min-height: 48px;
+      word-break: break-all;
+      text-align: center;
+    }
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 12px 28px;
+      justify-items: center;
+    }
+    .key-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #334155;
+      border: none;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.15s;
+    }
+    .key-btn:active {
+      transform: scale(0.92);
+      background: #475569;
+    }
+    .key-digit {
+      font-size: 1.7rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .key-letters {
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .action-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 12px 28px 24px;
+    }
+    .call-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #16a34a;
+      border: none;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
+      transition: transform 0.1s, background 0.15s;
+    }
+    .call-btn:active {
+      transform: scale(0.92);
+      background: #15803d;
+    }
+    .icon-action-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: color 0.2s;
+    }
+    .icon-action-btn:hover {
+      color: #f8fafc;
+    }
+    .list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 16px;
+    }
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      background: #273549;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .list-item:hover {
+      background: #334155;
+    }
+    .item-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+    .item-subtitle {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .call-screen-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 60px 24px 40px;
+      z-index: 100;
+    }
+    .call-screen-overlay.active {
+      display: flex;
+    }
+    .call-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: #334155;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      color: #38bdf8;
+      margin-bottom: 20px;
+    }
+    .end-call-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #dc2626;
+      border: none;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <div class="top-bar">
+      <span class="brand-title">Phone</span>
+      <span style="font-size: 0.85rem; color: #64748b;">SIM 1</span>
+    </div>
+
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="switchTab('dialer')">Keypad</div>
+      <div class="nav-tab" onclick="switchTab('recents')">Recents</div>
+      <div class="nav-tab" onclick="switchTab('contacts')">Contacts</div>
+    </div>
+
+    <!-- DIALER TAB -->
+    <div id="tab-dialer" class="tab-content active">
+      <div class="display-area">
+        <div id="contactMatch" class="contact-match"></div>
+        <div id="numberDisplay" class="number-display"></div>
+      </div>
+
+      <div class="numpad-grid">
+        <button class="key-btn" onclick="pressKey('1', 697, 1209)"><span class="key-digit">1</span><span class="key-letters">&nbsp;</span></button>
+        <button class="key-btn" onclick="pressKey('2', 697, 1336)"><span class="key-digit">2</span><span class="key-letters">ABC</span></button>
+        <button class="key-btn" onclick="pressKey('3', 697, 1477)"><span class="key-digit">3</span><span class="key-letters">DEF</span></button>
+
+        <button class="key-btn" onclick="pressKey('4', 770, 1209)"><span class="key-digit">4</span><span class="key-letters">GHI</span></button>
+        <button class="key-btn" onclick="pressKey('5', 770, 1336)"><span class="key-digit">5</span><span class="key-letters">JKL</span></button>
+        <button class="key-btn" onclick="pressKey('6', 770, 1477)"><span class="key-digit">6</span><span class="key-letters">MNO</span></button>
+
+        <button class="key-btn" onclick="pressKey('7', 852, 1209)"><span class="key-digit">7</span><span class="key-letters">PQRS</span></button>
+        <button class="key-btn" onclick="pressKey('8', 852, 1336)"><span class="key-digit">8</span><span class="key-letters">TUV</span></button>
+        <button class="key-btn" onclick="pressKey('9', 852, 1477)"><span class="key-digit">9</span><span class="key-letters">WXYZ</span></button>
+
+        <button class="key-btn" onclick="pressKey('*', 941, 1209)"><span class="key-digit">*</span><span class="key-letters">&nbsp;</span></button>
+        <button class="key-btn" onclick="pressKey('0', 941, 1336)"><span class="key-digit">0</span><span class="key-letters">+</span></button>
+        <button class="key-btn" onclick="pressKey('#', 941, 1477)"><span class="key-digit">#</span><span class="key-letters">&nbsp;</span></button>
+      </div>
+
+      <div class="action-row">
+        <button class="icon-action-btn" onclick="openSystemDialer()" title="System Dial">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        </button>
+        <button class="call-btn" onclick="startCall()">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+          </svg>
+        </button>
+        <button class="icon-action-btn" onclick="deleteDigit()" title="Backspace">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- RECENTS TAB -->
+    <div id="tab-recents" class="tab-content">
+      <div class="list-container" id="recentsList">
+        <div class="list-item" onclick="callNumber('+91 98765 43210', 'Alex Rivera')">
+          <div>
+            <div class="item-title">Alex Rivera</div>
+            <div class="item-subtitle">Outgoing &bull; Yesterday, 4:15 PM</div>
+          </div>
+          <span style="color:#22c55e;">&#9654;</span>
+        </div>
+        <div class="list-item" onclick="callNumber('+1 (555) 019-2834', 'Mom')">
+          <div>
+            <div class="item-title">Mom</div>
+            <div class="item-subtitle">Incoming &bull; Nov 4, 8:20 PM</div>
+          </div>
+          <span style="color:#38bdf8;">&#9660;</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACTS TAB -->
+    <div id="tab-contacts" class="tab-content">
+      <div class="list-container" id="contactsList">
+        <div class="list-item" onclick="callNumber('+91 98765 43210', 'Alex Rivera')">
+          <div>
+            <div class="item-title">Alex Rivera</div>
+            <div class="item-subtitle">+91 98765 43210</div>
+          </div>
+        </div>
+        <div class="list-item" onclick="callNumber('+1 (555) 019-2834', 'Mom')">
+          <div>
+            <div class="item-title">Mom</div>
+            <div class="item-subtitle">+1 (555) 019-2834</div>
+          </div>
+        </div>
+        <div class="list-item" onclick="callNumber('112', 'Emergency Helpline')">
+          <div>
+            <div class="item-title">Emergency Services</div>
+            <div class="item-subtitle">112</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE CALL OVERLAY -->
+    <div id="callOverlay" class="call-screen-overlay">
+      <div style="text-align: center;">
+        <div class="call-avatar" id="callAvatarIcon">&#128100;</div>
+        <div id="callingName" style="font-size: 1.5rem; font-weight: 700;">Unknown</div>
+        <div id="callingNumber" style="font-size: 1rem; color: #94a3b8; margin-top: 4px;"></div>
+        <div id="callTimer" style="font-size: 1rem; color: #22c55e; margin-top: 12px; font-weight: 600;">Calling...</div>
+      </div>
+      <div>
+        <button class="end-call-btn" onclick="endCall()">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentNumber = "";
+    let callTimerInterval = null;
+    let callSeconds = 0;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(freq1, freq2) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      osc1.frequency.value = freq1;
+      osc2.frequency.value = freq2;
+      gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      osc1.start();
+      osc2.start();
+      osc1.stop(audioCtx.currentTime + 0.2);
+      osc2.stop(audioCtx.currentTime + 0.2);
+    }
+
+    function pressKey(char, f1, f2) {
+      currentNumber += char;
+      updateDisplay();
+      if (f1 && f2) playTone(f1, f2);
+      if (navigator.vibrate) navigator.vibrate(25);
+    }
+
+    function deleteDigit() {
+      currentNumber = currentNumber.slice(0, -1);
+      updateDisplay();
+      if (navigator.vibrate) navigator.vibrate(15);
+    }
+
+    function updateDisplay() {
+      document.getElementById('numberDisplay').textContent = currentNumber;
+      const match = document.getElementById('contactMatch');
+      if (currentNumber.length >= 3) {
+        if (currentNumber.includes("98765")) match.textContent = "Alex Rivera";
+        else if (currentNumber.includes("112")) match.textContent = "Emergency Services";
+        else match.textContent = "";
+      } else {
+        match.textContent = "";
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      if (tab === 'dialer') {
+        document.querySelectorAll('.nav-tab')[0].classList.add('active');
+        document.getElementById('tab-dialer').classList.add('active');
+      } else if (tab === 'recents') {
+        document.querySelectorAll('.nav-tab')[1].classList.add('active');
+        document.getElementById('tab-recents').classList.add('active');
+      } else {
+        document.querySelectorAll('.nav-tab')[2].classList.add('active');
+        document.getElementById('tab-contacts').classList.add('active');
+      }
+    }
+
+    function openSystemDialer() {
+      if (currentNumber) {
+        window.location.href = `tel:${encodeURIComponent(currentNumber)}`;
+      } else {
+        alert("Please enter a phone number first.");
+      }
+    }
+
+    function startCall() {
+      if (!currentNumber) return;
+      callNumber(currentNumber, document.getElementById('contactMatch').textContent || "Unknown");
+    }
+
+    function callNumber(number, name) {
+      const overlay = document.getElementById('callOverlay');
+      document.getElementById('callingName').textContent = name || "Unknown";
+      document.getElementById('callingNumber').textContent = number;
+      document.getElementById('callTimer').textContent = "Calling...";
+      overlay.classList.add('active');
+
+      clearInterval(callTimerInterval);
+      callSeconds = 0;
+      setTimeout(() => {
+        callTimerInterval = setInterval(() => {
+          callSeconds++;
+          const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+          const secs = String(callSeconds % 60).padStart(2, '0');
+          document.getElementById('callTimer').textContent = `${mins}:${secs}`;
+        }, 1000);
+      }, 1500);
+    }
+
+    function endCall() {
+      clearInterval(callTimerInterval);
+      document.getElementById('callOverlay').classList.remove('active');
+    }
+  </script>
+</body>
+</html>
